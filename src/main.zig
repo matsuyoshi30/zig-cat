@@ -16,23 +16,13 @@ pub fn main() anyerror!void {
             continue;
         }
 
-        var file: std.fs.File = undefined;
-        if (std.fs.path.isAbsoluteZ(filepath)) {
-            file = std.fs.openFileAbsoluteZ(filepath, .{ .read = true }) catch |err| {
-                if (err == error.FileNotFound) {
-                    try stderr.print("zig-cat: {s}: No such file or directory\n", .{filepath});
-                }
-                continue;
-            };
-        } else {
-            const fd = std.os.openatZ(cwd_fd, filepath, std.os.O.RDONLY, 0) catch |err| {
-                if (err == error.FileNotFound) {
-                    try stderr.print("zig-cat: {s}: No such file or directory\n", .{filepath});
-                }
-                continue;
-            };
-            file = std.fs.File{ .handle = fd };
-        }
+        const fd = std.os.openatZ(cwd_fd, filepath, std.os.O.RDONLY, 0) catch |err| {
+            if (err == error.FileNotFound) {
+                try stderr.print("zig-cat: {s}: No such file or directory\n", .{filepath});
+            }
+            continue;
+        };
+        const file = std.fs.File{ .handle = fd };
         defer file.close();
 
         var buf: [4096]u8 = undefined;
