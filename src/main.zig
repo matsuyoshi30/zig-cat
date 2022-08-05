@@ -9,9 +9,9 @@ pub fn main() anyerror!void {
         const stdin = std.io.getStdIn().reader();
         var buf: [4096]u8 = undefined;
         while (true) {
-            const line = try stdin.readUntilDelimiterOrEof(&buf, '\n');
-            if (line.?.len == 0) break;
-            try stdout.print("{s}\n", .{line});
+            const buf_reads = try stdin.read(&buf);
+            try stdout.print("{s}", .{buf[0..buf_reads]});
+            if (buf_reads <= 0) break;
         }
     }
 
@@ -32,9 +32,9 @@ pub fn main() anyerror!void {
 
         var buf: [4096]u8 = undefined;
         while (true) {
-            const buf_reads = try file.readAll(&buf);
+            const buf_reads = try file.read(&buf);
             try stdout.print("{s}", .{buf[0..buf_reads]});
-            if (buf_reads < buf.len) break;
+            if (buf_reads <= 0) break;
         }
     }
 }
