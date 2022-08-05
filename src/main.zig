@@ -1,5 +1,14 @@
 const std = @import("std");
 
+fn cat(w: anytype, r: anytype) !void {
+    var buf: [4096]u8 = undefined;
+    while (true) {
+        const buf_reads = try r.read(&buf);
+        try w.print("{s}", .{buf[0..buf_reads]});
+        if (buf_reads <= 0) break;
+    }
+}
+
 pub fn main() anyerror!void {
     const stderr = std.io.getStdErr().writer();
     const stdout = std.io.getStdOut().writer();
@@ -7,12 +16,7 @@ pub fn main() anyerror!void {
     const argv = std.os.argv;
     if (argv.len == 1) {
         const stdin = std.io.getStdIn().reader();
-        var buf: [4096]u8 = undefined;
-        while (true) {
-            const buf_reads = try stdin.read(&buf);
-            try stdout.print("{s}", .{buf[0..buf_reads]});
-            if (buf_reads <= 0) break;
-        }
+        try cat(stdout, stdin);
     }
 
     const cwd_fd = std.fs.cwd().fd;
@@ -30,11 +34,6 @@ pub fn main() anyerror!void {
         const file = std.fs.File{ .handle = fd };
         defer file.close();
 
-        var buf: [4096]u8 = undefined;
-        while (true) {
-            const buf_reads = try file.read(&buf);
-            try stdout.print("{s}", .{buf[0..buf_reads]});
-            if (buf_reads <= 0) break;
-        }
+        try cat(stdout, file);
     }
 }
