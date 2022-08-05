@@ -5,9 +5,14 @@ pub fn main() anyerror!void {
     const stdout = std.io.getStdOut().writer();
 
     const argv = std.os.argv;
-    if (argv.len < 2) {
-        try stderr.print("give me some filenames\n", .{});
-        return;
+    if (argv.len == 1) {
+        const stdin = std.io.getStdIn().reader();
+        var buf: [4096]u8 = undefined;
+        while (true) {
+            const line = try stdin.readUntilDelimiterOrEof(&buf, '\n');
+            if (line.?.len == 0) break;
+            try stdout.print("{s}\n", .{line});
+        }
     }
 
     const cwd_fd = std.fs.cwd().fd;
