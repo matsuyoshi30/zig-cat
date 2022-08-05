@@ -1,11 +1,12 @@
 const std = @import("std");
 
 pub fn main() anyerror!void {
-    const stdout = std.io.getStdOut();
+    const stderr = std.io.getStdErr().writer();
+    const stdout = std.io.getStdOut().writer();
 
     const argv = std.os.argv;
     if (argv.len < 2) {
-        try stdout.writer().print("give me some filenames\n", .{});
+        try stderr.print("give me some filenames\n", .{});
         return;
     }
 
@@ -19,14 +20,14 @@ pub fn main() anyerror!void {
         if (std.fs.path.isAbsoluteZ(filepath)) {
             file = std.fs.openFileAbsoluteZ(filepath, .{ .read = true }) catch |err| {
                 if (err == error.FileNotFound) {
-                    try stdout.writer().print("zig-cat: {s}: No such file or directory\n", .{filepath});
+                    try stderr.print("zig-cat: {s}: No such file or directory\n", .{filepath});
                 }
                 continue;
             };
         } else {
             const fd = std.os.openatZ(cwd_fd, filepath, std.os.O.RDONLY, 0) catch |err| {
                 if (err == error.FileNotFound) {
-                    try stdout.writer().print("zig-cat: {s}: No such file or directory\n", .{filepath});
+                    try stderr.print("zig-cat: {s}: No such file or directory\n", .{filepath});
                 }
                 continue;
             };
@@ -36,6 +37,6 @@ pub fn main() anyerror!void {
 
         var buf: [4096]u8 = undefined;
         const buf_reads = try file.readAll(&buf);
-        try stdout.writer().print("{s}", .{buf[0..buf_reads]});
+        try stdout.print("{s}", .{buf[0..buf_reads]});
     }
 }
