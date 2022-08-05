@@ -26,7 +26,10 @@ pub fn main() anyerror!void {
         defer file.close();
 
         var buf: [4096]u8 = undefined;
-        const buf_reads = try file.readAll(&buf);
-        try stdout.print("{s}", .{buf[0..buf_reads]});
+        while (true) {
+            const buf_reads = try file.readAll(&buf);
+            try stdout.print("{s}", .{buf[0..buf_reads]});
+            if (buf_reads < buf.len) break;
+        }
     }
 }
